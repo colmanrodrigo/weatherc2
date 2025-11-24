@@ -3,27 +3,72 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>WeatherC2 — Página con widget</title>
+    <title>Widget Meteored - tamaño</title>
     <style>
       body { font-family: Arial, sans-serif; padding: 20px; }
-      header { margin-bottom: 20px; }
-      .widget-wrapper { max-width: 600px; margin: 0 auto; }
+
+      /* Método A: contenedor responsivo (mejor si el widget responde) */
+      .widget-responsive {
+        width: 100%;           /* usa % o px según necesites */
+        max-width: 800px;      /* aumenta este valor para hacerlo más grande */
+        margin: 0 auto;
+      }
+      .widget-responsive > div {
+        width: 100%;           /* forzar ancho del div interno si el widget lo respeta */
+      }
+
+      /* Método B: escalado con transform (útil si no hay opción nativa) */
+      .widget-scale-wrapper {
+        width: 600px;          /* ancho "real" del contenedor */
+        height: 400px;         /* alto que quieras mostrar */
+        overflow: hidden;      /* oculta lo que quede fuera tras escalar */
+        margin: 20px auto;
+        background: #f8f8f8;
+      }
+      .widget-scale {
+        transform-origin: left top; /* escalar desde la esquina superior izquierda */
+        /* Cambia scale(X) para aumentar o disminuir tamaño visual */
+        transform: scale(1.5);      /* ejemplo: 1.5x */
+        /* Ajuste del tamaño real para que el área escalada encaje:
+           si escalas 1.5x y quieres 600px visible, el elemento interno
+           debe tener width = 600px / 1.5 = 400px. */
+        width: 400px; 
+        height: 266px; /* ejemplo, ajústalo según proporción del widget */
+      }
+
+      /* Una clase pequeña para centrar y separar */
+      .section { margin-bottom: 24px; text-align:center; }
     </style>
   </head>
   <body>
-    <header>
-      <h1>Clima</h1> 
-    </header>
+    <h1>Probar aumento de tamaño del widget</h1>
 
-    <main class="widget-wrapper">
-      <!-- Aquí se inserta el widget que proporcionaste -->
-      <div id="mrwid75ee8fe0dc125730b344823244809e04">
-        <script type="text/javascript" async src="https://api.meteored.com/widget/loader/75ee8fe0dc125730b344823244809e04"></script>
+    <section class="section">
+      <h2>Método A — contenedor responsivo (prueba primero)</h2>
+      <div class="widget-responsive">
+        <!-- Inserta el snippet original -->
+        <div id="mrwid75ee8fe0dc125730b344823244809e04">
+          <script type="text/javascript" async src="https://api.meteored.com/widget/loader/75ee8fe0dc125730b344823244809e04"></script>
+        </div>
       </div>
-    </main>
+      <p>Si el widget es responsive, al aumentar max-width aquí se hará más grande sin perder calidad.</p>
+    </section>
 
-    <footer style="margin-top:30px; text-align:center; color:#666;">
-      <small>Widget cargado desde Meteored</small>
+    <section class="section">
+      <h2>Método B — escalado con transform (si no hay otra opción)</h2>
+      <div class="widget-scale-wrapper">
+        <div class="widget-scale">
+          <!-- Mismo snippet; ojo: el tamaño "real" del widget puede necesitar ajustes -->
+          <div id="mrwid75ee8fe0dc125730b344823244809e04-scale">
+            <script type="text/javascript" async src="https://api.meteored.com/widget/loader/75ee8fe0dc125730b344823244809e04"></script>
+          </div>
+        </div>
+      </div>
+      <p>Transform: scale(1.5) aumenta el aspecto, pero puede perder nitidez si el widget es raster.</p>
+    </section>
+
+    <footer style="text-align:center; color:#666;">
+      <small>Prueba ambos métodos y ajusta los anchos / scale según necesites.</small>
     </footer>
   </body>
 </html>
