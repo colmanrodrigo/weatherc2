@@ -3,56 +3,44 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Widget Meteored - tamaño</title>
+    <title></title>
     <style>
-      body { font-family: Arial, sans-serif; padding: 20px; }
+      /* Página limpia sin texto ni márgenes */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+      }
 
-      /* ===== Método A: doble tamaño (2x) =====
-         Usamos transform: scale(2) y reduciendo la "base width"
-         para que ocupe el doble visual sin romper el layout. */
-      .widget-responsive {
-        width: 50%;               /* base width = 100% / scale */
-        max-width: none;
-        margin: 0 auto;
+      /* Contenedor en la esquina superior izquierda, escalado 3x */
+      .widget-left {
         transform-origin: left top;
-        transform: scale(2);      /* <-- 2x */
-      }
-      .widget-responsive > div {
-        width: 100%;
-      }
-
-      /* ===== Método B: clonamos el widget (si el loader sólo permite 1 instancia) */
-      .widget-scale-wrapper {
-        width: 800px;          /* tamaño visible deseado */
-        height: 500px;
-        overflow: hidden;
-        margin: 20px auto;
-        background: #f8f8f8;
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-      }
-      .widget-scale {
-        transform-origin: left top;
-        transform: scale(2);   /* escala visual (ajusta aquí) */
-        width: 50%;            /* base width = visibleWidth / scale */
+        transform: scale(3);              /* <-- escala 3x */
+        width: calc(100% / 3);            /* base width = visibleWidth / scale */
+        height: auto;
+        margin: 0;
+        padding: 0;
+        display: block;
       }
 
-      .section { margin-bottom: 24px; text-align:center; }
+      /* Evita que el body muestre texto accidentalmente */
+      body * {
+        font-size: 0;
+        line-height: 0;
+      }
+
+      /* Permite que el widget conserve su propio texto/estilos internos */
+      .widget-left, .widget-left * {
+        font-size: initial;
+        line-height: initial;
+      }
     </style>
   </head>
   <body>
-    <h1>Probar aumento de tamaño del widget</h1>
-
-    <section class="section">
-      <h2>Método A — contenedor responsivo (x2)</h2>
-      <div class="widget-responsive">
-        <!-- CARGAMOS el widget UNA sola vez aquí (id exacto requerido por Meteored) -->
-        <div id="mrwid75ee8fe0dc125730b344823244809e04">
-          <script type="text/javascript" async src="https://api.meteored.com/widget/loader/75ee8fe0dc125730b344823244809e04"></script>
-        </div>
-      </div>
-   
-    </section>
+    <!-- Única carga del widget (id requerido por Meteored) -->
+    <div id="mrwid75ee8fe0dc125730b344823244809e04" class="widget-left">
+      <script type="text/javascript" async src="https://api.meteored.com/widget/loader/75ee8fe0dc125730b344823244809e04"></script>
+    </div>
   </body>
 </html>
