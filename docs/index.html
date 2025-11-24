@@ -7,36 +7,37 @@
     <style>
       body { font-family: Arial, sans-serif; padding: 20px; }
 
-      /* Método A: contenedor responsivo (mejor si el widget responde) */
+      /* ===== Método A: doble tamaño (2x) =====
+         Usamos transform: scale(2) y reduciendo la "base width"
+         para que ocupe el doble visual sin romper el layout. */
       .widget-responsive {
-        width: 100%;           /* usa % o px según necesites */
-        max-width: 800px;      /* aumenta este valor para hacerlo más grande */
+        width: 50%;               /* base width = 100% / scale */
+        max-width: none;
         margin: 0 auto;
+        transform-origin: left top;
+        transform: scale(2);      /* <-- 2x */
       }
       .widget-responsive > div {
-        width: 100%;           /* forzar ancho del div interno si el widget lo respeta */
+        width: 100%;
       }
 
-      /* Método B: escalado con transform (útil si no hay opción nativa) */
+      /* ===== Método B: clonamos el widget (si el loader sólo permite 1 instancia) */
       .widget-scale-wrapper {
-        width: 600px;          /* ancho "real" del contenedor */
-        height: 400px;         /* alto que quieras mostrar */
-        overflow: hidden;      /* oculta lo que quede fuera tras escalar */
+        width: 800px;          /* tamaño visible deseado */
+        height: 500px;
+        overflow: hidden;
         margin: 20px auto;
         background: #f8f8f8;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
       }
       .widget-scale {
-        transform-origin: left top; /* escalar desde la esquina superior izquierda */
-        /* Cambia scale(X) para aumentar o disminuir tamaño visual */
-        transform: scale(1.5);      /* ejemplo: 1.5x */
-        /* Ajuste del tamaño real para que el área escalada encaje:
-           si escalas 1.5x y quieres 600px visible, el elemento interno
-           debe tener width = 600px / 1.5 = 400px. */
-        width: 400px; 
-        height: 266px; /* ejemplo, ajústalo según proporción del widget */
+        transform-origin: left top;
+        transform: scale(2);   /* escala visual (ajusta aquí) */
+        width: 50%;            /* base width = visibleWidth / scale */
       }
 
-      /* Una clase pequeña para centrar y separar */
       .section { margin-bottom: 24px; text-align:center; }
     </style>
   </head>
@@ -44,31 +45,78 @@
     <h1>Probar aumento de tamaño del widget</h1>
 
     <section class="section">
-      <h2>Método A — contenedor responsivo (prueba primero)</h2>
+      <h2>Método A — contenedor responsivo (x2)</h2>
       <div class="widget-responsive">
-        <!-- Inserta el snippet original -->
+        <!-- CARGAMOS el widget UNA sola vez aquí (id exacto requerido por Meteored) -->
         <div id="mrwid75ee8fe0dc125730b344823244809e04">
           <script type="text/javascript" async src="https://api.meteored.com/widget/loader/75ee8fe0dc125730b344823244809e04"></script>
         </div>
       </div>
-      <p>Si el widget es responsive, al aumentar max-width aquí se hará más grande sin perder calidad.</p>
+      <p>Este bloque se escala 2x usando CSS (transform: scale(2)).</p>
     </section>
 
     <section class="section">
-      <h2>Método B — escalado con transform (si no hay otra opción)</h2>
-      <div class="widget-scale-wrapper">
-        <div class="widget-scale">
-          <!-- Mismo snippet; ojo: el tamaño "real" del widget puede necesitar ajustes -->
-          <div id="mrwid75ee8fe0dc125730b344823244809e04-scale">
-            <script type="text/javascript" async src="https://api.meteored.com/widget/loader/75ee8fe0dc125730b344823244809e04"></script>
-          </div>
+      <h2>Método B — clonando y escalando (si no podemos inicializar otra vez)</h2>
+      <div class="widget-scale-wrapper" aria-hidden="false">
+        <div id="widget-scale-target" class="widget-scale">
+          <!-- Aquí pegaremos una copia del widget una vez cargado -->
         </div>
       </div>
-      <p>Transform: scale(1.5) aumenta el aspecto, pero puede perder nitidez si el widget es raster.</p>
+      <p>El widget original se carga una vez; luego lo clonamos y escalamos aquí.</p>
     </section>
 
     <footer style="text-align:center; color:#666;">
-      <small>Prueba ambos métodos y ajusta los anchos / scale según necesites.</small>
+      <small>Si quieres otro factor distinto a 2x, cambia transform: scale(2) en las clases.</small>
     </footer>
+
+    <script>
+      // Observador que espera a que Meteored inyecte el contenido en el div original,
+      // luego clona el contenido (sin reinsertar scripts) y lo pega en el contenedor escalado.
+      document.addEventListener('DOMContentLoaded', function () {
+        const source = document.getElementById('mrwid75ee8fe0dc125730b344823244809e04');
+        const target = document.getElementById('widget-scale-target');
+
+        if (!source || !target) return;
+
+        function cloneWidgetOnce() {
+          try {
+            // si ya hay contenido dentro del source, clonamos
+            if (source.children.length === 0) return false;
+            // clone the rendered widget (deep clone)
+            const clone = source.cloneNode(true);
+            // remove any <script> tags inside the clone to avoid re-executing loader
+            const scripts = clone.querySelectorAll('script');
+            scripts.forEach(s => s.remove());
+            // clear target and append clone
+            target.innerHTML = '';
+            target.appendChild(clone);
+            return true;
+          } catch (e) {
+            console.error('Error clonando widget:', e);
+            return false;
+          }
+        }
+
+        // 1) Si el widget tarda en cargar, usamos MutationObserver para detectar cambios
+        const observer = new MutationObserver((mutations, obs) => {
+          if (cloneWidgetOnce()) {
+            obs.disconnect();
+          }
+        });
+        observer.observe(source, { childList: true, subtree: true });
+
+        // 2) Por si ya estaba cargado antes, intentamos también con un timeout corto
+        setTimeout(() => {
+          if (cloneWidgetOnce()) {
+            observer.disconnect();
+          }
+        }, 1500);
+
+        // 3) fallback: intento extra por si tarda más
+        setTimeout(() => {
+          cloneWidgetOnce();
+        }, 4000);
+      });
+    </script>
   </body>
 </html>
